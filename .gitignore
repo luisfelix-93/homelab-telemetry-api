@@ -1,0 +1,42 @@
+# Binários e executáveis
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Binários de teste gerados por `go test -c`
+*.test
+
+# Resultados de cobertura e profiling
+*.out
+*.prof
+coverage.html
+
+# Diretórios de build
+bin/
+dist/
+
+# Go workspace
+go.work
+go.work.sum
+
+# Variáveis de ambiente
+.env
+.env.*
+!.env.example
+
+# IDEs e editores
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.bak
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
+
+# Dependências vendorizadas (descomente se não for versionar o vendor)
+# vendor/
