@@ -153,7 +153,7 @@ func TestMemorySnapshotRepository_Overview(t *testing.T) {
 		inputServices := []domain.ServiceTelemetry{
 			{
 				Name:      "auth-service",
-				Status:    domain.SatusHealthy,
+				Status:    domain.StatusHealthy,
 				LatencyMs: 25,
 				LastCheck: now,
 				Message:   "OK",

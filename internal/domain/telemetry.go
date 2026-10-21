@@ -15,7 +15,7 @@ var (
 type ServiceStatus string
 
 const (
-	SatusHealthy   ServiceStatus = "UP"
+	StatusHealthy   ServiceStatus = "UP"
 	StatusDegraded ServiceStatus = "DEGRADED"
 	StatusDown     ServiceStatus = "DOWN"
 )
