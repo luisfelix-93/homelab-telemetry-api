@@ -9,6 +9,7 @@ var (
 	ErrCommandNotFound = errors.New("command not found")
 	ErrEmptyCommand    = errors.New("empty command")
 	ErrServiceNotFound = errors.New("service not found")
+	ErrSnapshotNotReady = errors.New("telemetry snapshot not ready yet")
 )
 
 type ServiceStatus string

@@ -40,3 +40,5 @@ Thumbs.db
 
 # Dependências vendorizadas (descomente se não for versionar o vendor)
 # vendor/
+# Agentes e skills
+.agents/
