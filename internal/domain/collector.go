@@ -11,5 +11,5 @@ type ServiceCollector interface {
 // NodeCollector faz a sondagem de um ou mais nós do homelab
 type NodeCollector interface {
 	Name() string
-	CollectorNodes(ctx context.Context) ([]NodeTelemetry, error)
+	CollectNodes(ctx context.Context) ([]NodeTelemetry, error)
 }
