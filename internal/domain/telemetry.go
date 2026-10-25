@@ -70,7 +70,8 @@ type TerminalCommandRequest struct {
 
 // TerminalCommandResponse encapsula a resposta processada para o frontend
 type TerminalCommandResponse struct {
-	Output     string      `json:"output"`
+	Command    string      `json:"command"`
+	Output     string      `json:"output,omitempty"`
 	Timestamp  time.Time   `json:"timestamp"`
 	OutputText string      `json:"output_text"`
 	Data       interface{} `json:"data,omitempty"`
