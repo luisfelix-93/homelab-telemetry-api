@@ -241,6 +241,35 @@ go test -race ./...
 
 ---
 
+## 🚀 Integração e Entrega Contínua (CI/CD)
+
+O repositório possui pipelines automatizados configurados via **GitHub Actions**:
+
+1. **Validação Contínua (`ci.yml`)**:
+   - Disparado em qualquer Pull Request ou push em branches de trabalho.
+   - Executa a suíte completa de testes com detecção de concorrência (`go test -v -race ./...`).
+
+2. **Release e Publicação Docker (`release.yml`)**:
+   - Disparado automaticamente após o merge na branch `main`.
+   - Executa os testes automatizados como portão de qualidade.
+   - Analisa os commits, calcula o versionamento semântico (SemVer) e gera a Git Tag + GitHub Release.
+   - Constrói o contêiner estático da aplicação e publica no **Docker Hub** com múltiplas tags:
+     - `:latest` - versão estável mais recente da `main`
+     - `:vX.Y.Z` - versão semântica oficial da release (ex: `v0.1.0`)
+     - `:YYYYmmDD` - tag diária no formato CalVer (ex: `20261029`)
+     - `:YYYYmmDD-<sha>` - tag imutável com data e hash curto do commit Git (ex: `20261029-ccdf426`)
+
+### Configuração de Secrets no GitHub
+
+Para que o deploy no Docker Hub funcione, configure os seguintes segredos em **Settings > Secrets and variables > Actions**:
+
+| Secret | Descrição |
+| :--- | :--- |
+| `DOCKERHUB_USERNAME` | Seu nome de usuário no Docker Hub |
+| `DOCKERHUB_PASSWORD` | Sua senha de acesso ao Docker Hub |
+
+---
+
 ## 📄 Licença
 
 Este projeto é desenvolvido para fins de observabilidade de homelab e integração com portfólio pessoal. Distribuído sob a licença [MIT](LICENSE).

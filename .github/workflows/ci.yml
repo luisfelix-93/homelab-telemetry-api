@@ -1,0 +1,28 @@
+name: CI - Automated Tests
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches-ignore: [ main ]
+
+jobs:
+  test:
+    name: Run Automated Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+
+      - name: Download Dependencies
+        run: go mod download
+
+      - name: Run Unit & Integration Tests
+        run: go test -v -race ./...
