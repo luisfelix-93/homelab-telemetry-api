@@ -1,0 +1,46 @@
+# Git
+.git
+.gitignore
+.github
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+
+# Local binaries and build outputs
+bin/
+dist/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+*.prof
+coverage.html
+
+# IDE and OS files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.bak
+.DS_Store
+Thumbs.db
+
+# Assistant & agent workspace files
+.agents/
+.gemini/
+
+# Documentation and markdown
+*.md
+!README.md
+docs/
+
+# Docker files (not needed inside container)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
