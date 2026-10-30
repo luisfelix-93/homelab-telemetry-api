@@ -45,7 +45,17 @@ func main() {
 	}
 
 	serviceCollector := collector.NewHTTPServiceCollector("homelab-http-probes", httpTargets, 3*time.Second)
-	nodeCollector := collector.NewSystemNodeCollector("homelab-system-probe", "lffilho-server", "control-plane")
+	var nodeCollector domain.NodeCollector
+
+	k3sCollector, err := collector.NewK3sNodeCollector("homelab-k3s-nodes")
+	if err != nil {
+		log.Printf("[Warning] Failed to initialize K3s node collector: %v. Falling back to system node probe.", err)
+		// Fallback opcional para o coletor de sistema local caso rode fora do cluster sem kubeconfig
+		nodeCollector = collector.NewSystemNodeCollector("homelab-system-probe", "local-host", "standalone")
+	} else {
+		log.Printf("[Main] K3s node collector successfully initialized.")
+		nodeCollector = k3sCollector
+	}
 
 	// 4. Inicialização do Worker de Background
 	// Roda a cada 20 segundos coletando métricas e atualizando o snapshot
