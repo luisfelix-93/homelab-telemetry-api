@@ -8,7 +8,8 @@ Projetada com foco em performance, baixo consumo de recursos e desacoplamento (C
 
 ## 🚀 Funcionalidades
 
-- **Coleta de Métricas do Host (Node Telemetry)**: Monitoramento em tempo real de hardware e sistema operacional (cores de CPU, porcentagem de uso de processamento, memória RAM total/usada e tempo de atividade/uptime) utilizando `gopsutil`.
+- **Coleta de Métricas do Host (Node Telemetry)**: Monitoramento de hardware e sistema operacional do host local (cores de CPU, uso de processamento, memória RAM e uptime) utilizando `gopsutil`.
+- **Métricas de Nós K3s/Kubernetes**: Coleta inventário, papel, estado e recursos alocáveis dos nós pela API Kubernetes; quando a API de métricas está disponível, inclui também uso de CPU e memória.
 - **Probes de Saúde HTTP (Service Telemetry)**: Verificação contínua e assíncrona de status e latência de microserviços externos e internos com timeout configurável.
 - **Worker em Background**: Rotina de telemetria assíncrona em goroutine dedicada, compilando snapshots consolidados da infraestrutura periodicamente.
 - **Cache In-Memory Thread-Safe**: Repositório de snapshots em memória utilizando leituras e escritas concorrentes seguras (`sync.RWMutex`), garantindo latência de resposta na faixa de microssegundos sem gargalos de banco de dados.
@@ -32,7 +33,7 @@ homelab-telemetry-api/
 │   ├── domain/                     # Entidades de negócio, contratos de repositório e interfaces
 │   ├── infra/
 │   │   ├── cache/                  # Implementação de repositório in-memory thread-safe
-│   │   └── collector/              # Coletores de sistema (gopsutil) e sondas HTTP
+│   │   └── collector/              # Coletores de sistema, nós K3s/Kubernetes e sondas HTTP
 │   ├── service/                    # Worker periódico e analisador de comandos (Command Parser)
 │   └── transport/
 │       └── http/                   # Roteador Chi, middlewares e controladores HTTP
@@ -93,7 +94,7 @@ Saída esperada no terminal:
 
 ## 📡 Endpoints da API
 
-A API expõe suas rotas sob o prefixo `/api/v1`. Para um guia completo com contratos TypeScript, exemplos de integração com React/SWR/Fetch e emulador de terminal, consulte o [**Guia de Integração Frontend**](docs/frontend-integration.md).
+A API expõe suas rotas sob o prefixo `/api/v1`. Para um guia completo com contratos TypeScript, exemplos de integração com React/SWR/Fetch e emulador de terminal, consulte o [**Guia de Integração Frontend**](docs/frontend-integration.md). As alterações desta branch estão descritas nas [notas de versão](docs/release-notes.md).
 
 ### 1. Healthcheck
 
@@ -168,7 +169,11 @@ Retorna o status de saúde e a latência de cada microserviço cadastrado via `S
 
 ### 4. Métricas de Nós (Hardware Nodes)
 
-Retorna métricas de hardware de cada máquina/nó que compõe o homelab.
+Retorna métricas de cada máquina/nó que compõe o homelab. Para nós K3s/Kubernetes, o coletor obtém CPU e memória alocáveis pela API principal e os valores de uso pela API de métricas (`metrics.k8s.io`).
+
+O acesso in-cluster ou por kubeconfig deve permitir listar os nós. Para preencher CPU e memória utilizadas, o cluster também precisa disponibilizar a API de métricas (normalmente via Metrics Server). Se ela não estiver configurada ou falhar, os nós continuam sendo retornados, mas `cpu_percent` e `memory_used_mb` ficam zerados.
+
+No coletor K3s, `cpu_percent` é a razão entre o uso em milicores e a CPU alocável: por exemplo, `0.125` equivale a 12,5% da capacidade alocável.
 
 - **Método**: `GET`
 - **Rota**: `/api/v1/telemetry/nodes`
@@ -180,7 +185,7 @@ Retorna métricas de hardware de cada máquina/nó que compõe o homelab.
       "role": "control-plane",
       "status": "Ready",
       "cpu_cores": 16,
-      "cpu_percent": 12.5,
+      "cpu_percent": 0.125,
       "memory_total_mb": 32768,
       "memory_used_mb": 8192,
       "uptime_seconds": 124580
@@ -229,7 +234,7 @@ Permite enviar comandos de emulação de terminal web e receber respostas format
 
 ## 🧪 Testes
 
-A suíte de testes unitários e de integração cobre coletores, analisador de comandos, parsers de alvos, cache in-memory e handlers HTTP:
+A suíte de testes unitários e de integração cobre coletores, analisador de comandos, parsers de alvos, cache in-memory e handlers HTTP. Os testes do coletor K3s verificam papéis e estados dos nós, recursos alocáveis, conversão das métricas de uso e comportamento quando a API de métricas ou a listagem de nós falha:
 
 ```bash
 # Executar todos os testes
