@@ -93,7 +93,7 @@ Saída esperada no terminal:
 
 ## 📡 Endpoints da API
 
-A API expõe suas rotas sob o prefixo `/api/v1`:
+A API expõe suas rotas sob o prefixo `/api/v1`. Para um guia completo com contratos TypeScript, exemplos de integração com React/SWR/Fetch e emulador de terminal, consulte o [**Guia de Integração Frontend**](docs/frontend-integration.md).
 
 ### 1. Healthcheck
 
