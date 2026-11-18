@@ -63,7 +63,10 @@ func (k *K3sServiceCollector) CollectServices(ctx context.Context) ([]domain.Ser
 			}
 		}
 
-		if activeSubsets == 0 {
+		if err != nil {
+			status = domain.StatusDegraded
+			message = fmt.Sprintf("failed to get endpoints for %s/%s: %v", svc.Namespace, svc.Name, err)
+		} else if activeSubsets == 0 {
 			status = domain.StatusDown
 			message = "no active endpoints (pods) available"
 		}
