@@ -34,27 +34,27 @@ func main() {
 	// 2. Inicialização do Repositório de Cache (In-Memory)
 	repo := cache.NewMemorySnapshotRepository()
 
-	// 3. Configuração dos Coletores (Targets do seu Homelab)
-	// URLs definidas via SERVICE_TARGETS no formato "nome=url,nome=url" (veja .env.example)
-	httpTargets, err := collector.ParseHTTPTargets(os.Getenv("SERVICE_TARGETS"))
-	if err != nil {
-		log.Fatalf("[Main] invalid SERVICE_TARGETS: %v", err)
-	}
-	if len(httpTargets) == 0 {
-		log.Println("[Main] warning: SERVICE_TARGETS is empty, no HTTP services will be probed")
-	}
-
-	serviceCollector := collector.NewHTTPServiceCollector("homelab-http-probes", httpTargets, 3*time.Second)
+	// 3. Configuração dos Coletores (K3s com fallback local)
+	var serviceCollector domain.ServiceCollector
 	var nodeCollector domain.NodeCollector
 
-	k3sCollector, err := collector.NewK3sNodeCollector("homelab-k3s-nodes")
+	k3sNodeCollector, err := collector.NewK3sNodeCollector("homelab-k3s-nodes")
 	if err != nil {
-		log.Printf("[Warning] Failed to initialize K3s node collector: %v. Falling back to system node probe.", err)
-		// Fallback opcional para o coletor de sistema local caso rode fora do cluster sem kubeconfig
+		log.Printf("[Warning] Failed to initialize K3s collectors: %v. Falling back to local probes.", err)
 		nodeCollector = collector.NewSystemNodeCollector("homelab-system-probe", "local-host", "standalone")
+
+		httpTargets, parseErr := collector.ParseHTTPTargets(os.Getenv("SERVICE_TARGETS"))
+		if parseErr != nil {
+			log.Fatalf("[Main] invalid SERVICE_TARGETS: %v", parseErr)
+		}
+		if len(httpTargets) == 0 {
+			log.Println("[Main] warning: SERVICE_TARGETS is empty, no HTTP services will be probed")
+		}
+		serviceCollector = collector.NewHTTPServiceCollector("homelab-http-probes", httpTargets, 3*time.Second)
 	} else {
-		log.Printf("[Main] K3s node collector successfully initialized.")
-		nodeCollector = k3sCollector
+		log.Printf("[Main] K3s node and service collectors successfully initialized.")
+		nodeCollector = k3sNodeCollector
+		serviceCollector = collector.NewK3sServiceCollector("homelab-k3s-services", k3sNodeCollector.Clientset(), "")
 	}
 
 	// 4. Inicialização do Worker de Background
