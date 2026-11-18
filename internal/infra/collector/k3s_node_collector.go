@@ -70,6 +70,10 @@ func (k *K3sNodeCollector) Name() string {
 	return k.name
 }
 
+func (k *K3sNodeCollector) Clientset() kubernetes.Interface {
+	return k.clientset
+}
+
 func (k *K3sNodeCollector) CollectNodes(ctx context.Context) ([]domain.NodeTelemetry, error) {
 	nodeList, err := k.clientset.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err != nil {
