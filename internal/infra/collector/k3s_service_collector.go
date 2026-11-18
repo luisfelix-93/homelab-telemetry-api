@@ -80,6 +80,7 @@ func (k *K3sServiceCollector) CollectServices(ctx context.Context) ([]domain.Ser
 		telemetryServices = append(telemetryServices, domain.ServiceTelemetry{
 			Name:       displayName,
 			Status:     status,
+			LastCheck:  metav1.Now().Time.UTC(),
 			LatencyMs:  2, // Latencia interna do plano de controle do k3s
 			Message:    message,
 		})
