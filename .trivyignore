@@ -1,0 +1,7 @@
+# Arquivo de exceções do Trivy (.trivyignore)
+# Utilize apenas para falsos positivos ou riscos formalmente aceitos.
+# Sempre documente o motivo e a data de revisão acima de cada CVE.
+#
+# Exemplo:
+# # CVE-2024-XXXX - Não aplicável ao fluxo HTTP da aplicação (revisar em YYYY-MM-DD)
+# CVE-2024-XXXX

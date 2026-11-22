@@ -1,0 +1,11 @@
+title = "Gitleaks configuration for homelab-telemetry-api"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Arquivos de exemplo e checksums que não contêm segredos reais"
+paths = [
+  '''\.env\.example$''',
+  '''go\.sum$''',
+]
