@@ -6,6 +6,7 @@ on:
 
 permissions:
   contents: write
+  security-events: write
 
 jobs:
   test:
@@ -28,9 +29,90 @@ jobs:
       - name: Run Unit & Integration Tests
         run: go test -v -race ./...
 
+  security:
+    name: DevSecOps Source & Config Scans
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code (Full History for Gitleaks)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Gitleaks Secret Scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Trivy FS Gate (Dependencies)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true
+          exit-code: '1'
+
+      - name: Trivy Config Gate (Dockerfile & IaC)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: 'config'
+          scan-ref: '.'
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+
+  build_and_scan:
+    name: Build & Scan Docker Image
+    needs: [ test, security ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image (Local Scan Only)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          load: true
+          push: false
+          tags: homelab-telemetry-api:scan-${{ github.sha }}
+
+      - name: Trivy Image Scan (SARIF)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: homelab-telemetry-api:scan-${{ github.sha }}
+          format: 'sarif'
+          output: 'trivy-image-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true
+          exit-code: '0'
+
+      - name: Upload Trivy Image SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        continue-on-error: true
+        with:
+          sarif_file: 'trivy-image-results.sarif'
+          category: 'trivy-image'
+
+      - name: Trivy Image Gate
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: homelab-telemetry-api:scan-${{ github.sha }}
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true
+          exit-code: '1'
+
   release:
     name: Create Tag, Release & Publish Docker Image
-    needs: test
+    needs: build_and_scan
     runs-on: ubuntu-latest
 
     steps:

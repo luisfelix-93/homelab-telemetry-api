@@ -42,5 +42,4 @@ Thumbs.db
 # vendor/
 # Agentes e skills
 .agents/
-docs/
 logs/
